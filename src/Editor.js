@@ -6,6 +6,7 @@ define(function (require) {
     var char = '\u200B';
 
     var commandsReg = commands.commandsReg;
+
     var lineBreakReg = /^(?:blockquote|pre|div)$/i;
 
     var effectNodeReg = /(?:[pubia]|h[1-6]|blockquote|[uo]l|li)/i;
@@ -102,10 +103,10 @@ define(function (require) {
             if (e.which !== 13 || e.shiftKey) {
                 me.toolbar.show(400);
             }
+
         })
         // 编辑器键盘按键事件
         .on('keydown', function (e) {
-            me.clearZeroWidthChar();
 
             if (e.which !== 13 || e.shiftKey) {
 
@@ -286,7 +287,7 @@ define(function (require) {
             commands.commandOverall(action);
         }
         // font
-        // color | size
+        // size | fore-color | back-color
         else if (commandsReg.font.test(action)) {
             commands.commandFont(action, options);
         }

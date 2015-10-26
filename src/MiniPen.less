@@ -1,0 +1,130 @@
+.pen-toolbar {
+    font: 400 1.16em/1.45 Palatino, Optima, Georgia, serif;
+    color: #331;
+    white-space:nowrap;
+    box-shadow:1px 2px 3px -2px #222;
+    background:#333;
+    background-image:linear-gradient(to bottom, #222, #333);
+    opacity:0.9;
+    position:fixed;
+    height:36px;
+    border:1px solid #333;
+    border-radius:3px;
+    display:none;
+    z-index:1000;
+
+    .pen-menu-btn {
+        display:inline-block;
+
+        .pen-icon{
+            position: relative; 
+            min-width:20px;
+            display:inline-block;
+            padding:0 10px;
+            height: 36px;
+            line-height: 36px;
+            vertical-align: top;
+            color:#fff;
+            text-align:center;
+            cursor:pointer;
+            user-select:none;
+            position: relative;
+
+            [class^="icon-"] {
+                background: transparent;
+                background-image: none;
+            }
+
+            &:hover{
+                background:#000;
+            }
+
+
+            &.active{
+                color:#1abf89;
+                background:#000;
+                box-shadow:inset 2px 2px 4px #000;
+            }
+
+            .dropdown-list {
+
+                position: absolute;
+                left: 0;
+                top: 100%;
+                width: 130px;
+                border: solid 1px #ccc;
+                background-color: #fff;
+                display: none;
+            }
+
+
+
+            &:hover {
+                .dropdown-list {
+                    display: block;
+                }
+            }
+        }
+
+        .fa-bg-color,
+        .fa-color {
+            .dropdown-list-item {
+                float: left;
+                border: 1px solid transparent;
+                height: 18px;
+                width: 18px;
+                margin: 3px;
+                box-shadow: 0 1px 2px rgba(0,0,0,.5);
+
+
+            } 
+        }
+        .fa-text-height {
+            
+            .dropdown-list {
+                width: 60px;
+            }
+
+            .dropdown-list-item {
+                cursor: pointer;
+                height: 25px;
+                color: #000;
+                line-height: 25px;
+                border-bottom: solid 1px #eee;
+            }
+        }
+        
+        .fa-bg-color {
+            background-color: #666;
+        }
+    }
+
+    .pen-input{
+        font-size: 14px;
+        line-height: 1;
+        display: none;
+        
+        &:focus{
+            outline:none;
+        }
+    }
+    
+    // 箭头
+    &:after {
+        top:100%;
+        border:
+        solid transparent;
+        content:" ";
+        height:0;
+        width:0;
+        position:absolute;
+        pointer-events:none;
+        border-color:rgba(51, 51, 51, 0);
+        border-top-color:#333;
+        border-width:6px;
+        left:50%;
+        margin-left:-6px;
+    }
+}
+
+

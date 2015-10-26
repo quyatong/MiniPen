@@ -10,11 +10,14 @@ define(function (require) {
         class: 'pen',
 
         list: [
-            'blockquote', 'h2', 'h3', 'p', 'code',
-            'insertorderedlist', 'insertunorderedlist',
-            'inserthorizontalrule', 'indent', 'outdent',
+            // 文字 颜色 | 背景色 | 字体大小
+            'font-color', 'font-bg-color', 'font-size',
+            
+            // 加粗 斜体 下划线 删除线
             'bold', 'italic', 'underline', 'strikethrough',
-            'createlink', 'insertimage'
+
+            // 对齐方式
+            'align-left', 'align-center', 'align-right'
         ],
 
         // 属性 黑名单

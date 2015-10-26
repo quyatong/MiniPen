@@ -3,12 +3,6 @@ define(function (require) {
     var root = window;
     var doc = document;
 
-    var strReg = {
-        whiteSpace: /(^\s+)|(\s+$)/g,
-        mailTo: /^(?!mailto:|.+\/|.+#|.+\?)(.*@.*\..+)$/,
-        http: /^(?!\w+?:\/\/|mailto:|\/|\.\/|\?|#)(.*)$/
-    };
-
     var colors = [
         'rgb(0, 0, 0)', 'rgb(126, 36, 18)', 'rgb(255, 84, 0)', 'rgb(34, 88, 1)', 'rgb(12, 82, 158)',
         'rgb(51, 51, 51)', 'rgb(182, 27, 82)', 'rgb(244, 113, 31)', 'rgb(59, 188, 30)', 'rgb(35, 163, 211)',
@@ -17,6 +11,13 @@ define(function (require) {
         'rgb(255, 255, 255)', 'rgb(255, 204, 204)', 'rgb(217, 239, 127)', 'rgb(195, 246, 73)'
     ];
 
+    var sizes = ['96px', '64px', '48px', '32px', '24px', '20px', '18px', '16px', '14px', '13px', '12px'];
+
+    var icons = {
+        'size': 'text-height'
+    };
+
+
     /**
      * 工具条构造函数
      *
@@ -24,41 +25,106 @@ define(function (require) {
      */
     var Toolbar = function (config) {
         var me = this;
-        var toolList = config.list;
-        var menu = [];
-        var inputBar = '';
+        var list = config.list;
 
-        // 构建menu
-        $(toolList).each(function (index, action) {
-            var clazz = 'pen-icon fa fa-' + action;
-            var extra = [];
-
-            if (action == 'font') {
-                extra.push('<ul class="color-list">');
-                $(colors).each(function (index, color) {
-                    extra.push('<li class="color" data-color="' + color + '" style="background-color: ' + color + '"></li>');
-                });
-                extra.push('</ul>');
-            }
-
-            menu.push('<i class="' + clazz + '" data-action="' + action + '">' + extra.join('')+ '</i>');
-        });
-
-        // 构建输入框
-        if ($.inArray(toolList, 'createlink') || $.inArray(toolList, 'insertimage')) {
-            inputBar = '<input class="pen-input" placeholder="http://" />';
-        }
-
-        // 创建toolbar
-        menu = $('<div class="pen-menu"></div>').html(menu.join('')).prop('outerHTML');
-        inputBar = $(inputBar).prop('outerHTML');
-
-        me.main = $('<div class="' + config.class + '-toolbar pen-toolbar"></div>').html(menu + inputBar)[0];
-
+        me.main = me.build(list, config);
+        
         // 绑定事件
         me.bindEvents();
 
         doc.body.appendChild(me.main);
+    };
+
+
+    /**
+     * 构建toolbar
+     * 
+     * @param  {Array}      list    工具列表
+     * @return {Element}            元素
+     */
+    Toolbar.prototype.build = function (list, config) {
+
+        /**
+         * 构建下拉列表
+         *
+         * @param  {Array}  list    数据
+         * @param  {string} dataKey data key
+         * @param  {string} cssKey  css属性名
+         * @param  {bool}   isShow  是否显示
+         * @return {string}         构建完成的下拉列表html string
+         */
+        var buildDropDownList = function (list, dataKey, cssKey, isShow) {
+            var dropDownList = [];
+        
+            dropDownList.push('<ul class="dropdown-list">');
+
+            $(list).each(function (index, item) {
+
+                dropDownList.push(''
+                    +   '<li class="dropdown-list-item" '
+                    +       'data-' + dataKey + '="' + item + '" '
+                    +       'data-type="' + dataKey + '" '
+                    +       (cssKey ? ('style="' + cssKey + ': ' + item + '"') : '') 
+                    +   '>'
+                    +       (isShow ? item : '')
+                    +   '</li>'
+                );
+            });
+        
+            dropDownList.push('</ul>');
+            console.log(dropDownList);
+            return dropDownList.join('');
+        };
+
+        var menu = ['<div class="pen-menu"></div>'];
+
+        // 构建menu
+        $(list).each(function (index, action) {
+            var dropDownList = '';
+            var fontAction = '';
+
+            // 文字有关的 需要下拉框
+            if (/^font-(.*)/.test(action)) {
+                fontAction = RegExp.$1;
+
+
+                if (fontAction == 'color') {
+                    dropDownList = buildDropDownList(colors, 'color', 'background-color');
+                }
+                else if (fontAction == 'size') {
+                    dropDownList = buildDropDownList(sizes, 'size', false, true);
+                }
+                else if (fontAction == 'bg-color') {
+                    dropDownList = buildDropDownList(colors, 'color', 'background-color');
+                }
+            }
+
+            var clazz = 'pen-icon fa fa-' + ((fontAction && ('font ' + 'fa-' + (icons[fontAction] || fontAction))) || action);
+
+            menu.push('' 
+                + '<div class="pen-menu-btn">'
+                +     '<i class="' + clazz + '" data-action="' + action + '">' 
+                +           dropDownList
+                +     '</i>'
+                + '</div>'
+            );
+        });
+        menu.push();
+
+        var inputBar = '';
+
+        // 构建输入框
+        if ($.inArray(list, 'createlink') || $.inArray(list, 'insertimage')) {
+            inputBar = '<input class="pen-input" placeholder="http://" />';
+        }
+
+        // 创建toolbar
+        return $(''
+            + '<div class="' + config.class + '-toolbar pen-toolbar">' 
+            +   menu.join('') 
+            +   inputBar 
+            + '</div>'
+        )[0];
     };
 
     /**
@@ -142,14 +208,21 @@ define(function (require) {
         $(main).on('click', function (e) {
             var icon = $(e.target).closest('.pen-icon');
             var action = icon.data('action');
+            var target = $(e.target);
 
             // 修改字体 color | size |
-            if (action == 'font') {
-                if ($(e.target).hasClass('color')) {
-                    me.editor.execCommand(action, {
-                        type: 'color',
-                        value: $(e.target).data('color')
-                    });                    
+            if (/^font-(.*)/.test(action)) {
+
+                if (target.hasClass('dropdown-list-item')) {
+                    var type = target.data('type');
+
+                    me.editor.execCommand(
+                        action, 
+                        {
+                            type: type,
+                            value: target.data(type)
+                        }
+                    );       
                 }
 
                 return;

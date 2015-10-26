@@ -23,7 +23,7 @@ define(function (require) {
          * @param  {string} val 命令内容
          */
         commandOverall: function (cmd, value) {
-            doc.execCommand(cmd, false, value);
+            doc.execCommand(cmd, '', value);
         },
 
         /**
@@ -48,11 +48,17 @@ define(function (require) {
          *
          * @param  {string} tag   标签名
          * @param  {string} value 内容
+         * @param  {string} style 样式
          */
-        commandWrap: function (tag, value) {
+        commandWrap: function (tag, value, style) {
             var me = this;
-            var value = '<' + tag + '>' + (value || selection.toString()) + '</' + tag + '>';
+            var styleStr = '';
+            $.each(style, function (key, value) {
+                styleStr += key + ':' + value + ';';
+            });
 
+            var value = '<' + tag + (styleStr ? (' style="' + styleStr + '"') : '') + '>' + (value || selection.toString()) + '</' + tag + '>';
+            console.log(value);
             me.commandOverall('insertHTML', value);
         },
 
@@ -88,10 +94,19 @@ define(function (require) {
          */
         commandFont: function (name, options) {
             var map = {
-                'color': 'ForeColor'
+                'font-color': 'ForeColor',
+                'font-bg-color': 'BackColor',
+                'font-size': 'FontSize'
             };
-            // console.log('font' + options.type, options.value);
-            this.commandOverall(map[options.type], options.value);
+
+            if (name == 'font-color' || name == 'font-bg-color') {
+                this.commandOverall(map[name], options.value);
+            }
+            else {
+                this.commandWrap('label', null, {
+                    'font-size': options.value
+                });
+            }
         }
     };
 
