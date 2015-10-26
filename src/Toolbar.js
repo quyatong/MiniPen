@@ -72,7 +72,6 @@ define(function (require) {
             });
         
             dropDownList.push('</ul>');
-            console.log(dropDownList);
             return dropDownList.join('');
         };
 

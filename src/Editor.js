@@ -20,6 +20,8 @@ define(function (require) {
     var Editor = function (config) {
         var me = this;
 
+        me.config = config;
+
         me.main = config.editor;
 
         // 设置editor class和可编辑属性
@@ -222,7 +224,7 @@ define(function (require) {
         }
 
         me.prevContent = currentContent;
-        me.onChange && me.onChange(currentContent, prevContent);
+        me.config.onChange && me.config.onChange(currentContent, prevContent);
     };
 
     /**
@@ -235,16 +237,11 @@ define(function (require) {
         var main = me.main;
         var range;
 
-        // if (ele) {
-        //     range = ele.
-        // }
-        // else {
-            range = selection.rangeCount && selection.getRangeAt(0);
+        range = selection.rangeCount && selection.getRangeAt(0);
 
-            if (!range) {
-                range = doc.createRange();
-            }
-        // }
+        if (!range) {
+            range = doc.createRange();
+        }
 
         // 如果选择项包含元素不是editor
         if (!$(range.commonAncestorContainer).closest(main).length) {
@@ -399,7 +396,7 @@ define(function (require) {
      */
     Editor.prototype.getContent = function () {
         var me = this;
-        return me.isEmpty() ? '' : $.trim($(me.editor).html());
+        return me.isEmpty() ? '' : $.trim($(me.main).html());
     };
 
     /**
@@ -451,6 +448,8 @@ define(function (require) {
     Editor.prototype.destroy = function () {
         var me = this;
         var editor = me.main;
+
+        me.checkContentChange();
 
         // 清空所有范围
         selection.removeAllRanges();
