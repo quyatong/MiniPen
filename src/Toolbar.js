@@ -2,7 +2,7 @@ define(function (require) {
     var $ = require('jquery');
     var root = window;
     var doc = document;
-
+    var timer = null;
     var colors = [
         'rgb(0, 0, 0)', 'rgb(126, 36, 18)', 'rgb(255, 84, 0)', 'rgb(34, 88, 1)', 'rgb(12, 82, 158)',
         'rgb(51, 51, 51)', 'rgb(182, 27, 82)', 'rgb(244, 113, 31)', 'rgb(59, 188, 30)', 'rgb(35, 163, 211)',
@@ -28,11 +28,9 @@ define(function (require) {
         var list = config.list;
 
         me.main = me.build(list, config);
-        
+
         // 绑定事件
         me.bindEvents();
-
-        doc.body.appendChild(me.main);
     };
 
 
@@ -75,7 +73,7 @@ define(function (require) {
             return dropDownList.join('');
         };
 
-        var menu = ['<div class="pen-menu"></div>'];
+        var menu = ['<div class="pen-menu">'];
 
         // 构建menu
         $(list).each(function (index, action) {
@@ -108,22 +106,28 @@ define(function (require) {
                 + '</div>'
             );
         });
-        menu.push();
 
-        var inputBar = '';
+        menu.push('</div>');
 
-        // 构建输入框
-        if ($.inArray(list, 'createlink') || $.inArray(list, 'insertimage')) {
-            inputBar = '<input class="pen-input" placeholder="http://" />';
-        }
+        // var inputBar = '';
 
-        // 创建toolbar
-        return $(''
+        // // 构建输入框
+        // if ($.inArray(list, 'createlink') || $.inArray(list, 'insertimage')) {
+        //     inputBar = '<input class="pen-input" placeholder="http://" />';
+        // }
+        // 
+        
+        var toolbar = $(''
             + '<div class="' + config.class + '-toolbar pen-toolbar">' 
             +   menu.join('') 
-            +   inputBar 
+            // +   inputBar 
             + '</div>'
         )[0];
+
+        doc.body.appendChild(toolbar);
+
+        // 创建toolbar
+        return toolbar;
     };
 
     /**
@@ -138,23 +142,29 @@ define(function (require) {
     /**
      * 显示工具条
      *
-     * @param  {Range} range 范围
+     * @param  {Range}  range 范围
      * @param  {number} delay 延迟
      */
     Toolbar.prototype.show = function (delay) {
         var me = this;
         var main = me.main;
 
+        clearTimeout(timer);
+
         var exec = function () {
+            me.editor.range = me.editor.getRange();
+
             // 显示
             $(main).show();
 
             // 重定位
-            me.rePos(me.editor.getRange());
+            me.rePos();
+
+            me.highlight();
         };
 
         if (delay) {
-            setTimeout(exec, delay);
+            timer = setTimeout(exec, delay);
         }
         else {
             exec();
@@ -176,9 +186,11 @@ define(function (require) {
      *
      * @param  {Range} range 范围
      */
-    Toolbar.prototype.rePos = function (range) {
+    Toolbar.prototype.rePos = function () {
         var me = this;
         var main = me.main;
+        var editor = me.editor;
+        var range = editor.range;
 
         var offset = range.getBoundingClientRect();
         var toolbarPadding = 10;
@@ -199,7 +211,7 @@ define(function (require) {
         var me = this;
         var main = me.main;
 
-        $(root).on('resize,scroll', function() {
+        $(root).on('resize scroll', function() {
             !$(main).is(':hidden') && me.rePos();
         });
 
@@ -209,6 +221,9 @@ define(function (require) {
             var action = icon.data('action');
             var target = $(e.target);
 
+            if (!action) {
+                return;
+            }
             // 修改字体 color | size |
             if (/^font-(.*)/.test(action)) {
 
@@ -221,18 +236,17 @@ define(function (require) {
                             type: type,
                             value: target.data(type)
                         }
-                    );       
+                    );
+
+                    me.editor.range = me.editor.getRange();
                 }
 
                 return;
             }
 
-            if (!action) {
-                return;
-            }
-
             if (!/(?:createlink)|(?:insertimage)/.test(action)) {
-                me.editor.execCommand(action);
+                me.editor.execCommand(action, '');
+                me.show();
                 return;
             }
         });
@@ -245,44 +259,23 @@ define(function (require) {
      */
     Toolbar.prototype.highlight = function() {
         var me = this;
-        var toolbar = me.toolbar;
-        var node = me.getNode();
+        var main = me.main;
+        var editor = me.editor;
+        var node = editor.getNode();
 
         // 先把所有按钮清除高粱
-        $('.active', toolbar).removeClass('active');
+        $('.active', main).removeClass('active');
 
         if (!node) {
             return me;
         }
 
-        var effects = me.effectNode(node);
-        var inputBar = me._inputBar;
+        var effects = editor.effectNode(node);
 
-        if (inputBar && toolbar === me.menu) {
-
-            // display link input if createlink enabled
-            inputBar.style.display = 'none';
-
-            // reset link input value
-            inputBar.value = '';
-        }
-
-        $(effects, function(index, item) {
+        $(effects).each(function(index, item) {
             var tag = item.nodeName.toLowerCase();
 
             switch(tag) {
-                case 'a':
-                    if (inputBar) {
-                        inputBar.value = item.getAttribute('href');
-                    }
-                    tag = 'createlink';
-                    break;
-                case 'img':
-                    if (inputBar) {
-                        inputBar.value = item.getAttribute('src');
-                    }
-                    tag = 'insertimage';
-                    break;
                 case 'i':
                     tag = 'italic';
                     break;
@@ -315,7 +308,7 @@ define(function (require) {
             }
 
             // 高亮按钮
-            $(toolbar).find('[data-action=' + tag + ']').addClass('active');
+            $(main).find('[data-action=' + tag + ']').addClass('active');
         });
     };
 

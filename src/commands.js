@@ -23,7 +23,7 @@ define(function (require) {
          * @param  {string} val 命令内容
          */
         commandOverall: function (cmd, value) {
-            doc.execCommand(cmd, '', value);
+            doc.execCommand(cmd, false, value);
         },
 
         /**
@@ -53,12 +53,12 @@ define(function (require) {
         commandWrap: function (tag, value, style) {
             var me = this;
             var styleStr = '';
+
             $.each(style, function (key, value) {
                 styleStr += key + ':' + value + ';';
             });
 
             var value = '<' + tag + (styleStr ? (' style="' + styleStr + '"') : '') + '>' + (value || selection.toString()) + '</' + tag + '>';
-            console.log(value);
             me.commandOverall('insertHTML', value);
         },
 

@@ -52,9 +52,11 @@ define(function (require) {
         var me = this;
         var main = me.main;
 
-        // 维护状态
-        var selecting = false;
-
+        /**
+         * 在外边点击
+         *
+         * @param  {Event} e  事件对象
+         */
         var outsideClick = function (e) {
             if (
                 me.toolbar
@@ -65,6 +67,9 @@ define(function (require) {
                 me.toolbar.show(100);
             }
         };
+
+        // 维护状态
+        var selecting = false;
 
         // 鼠标事件
         $(main)
@@ -105,13 +110,11 @@ define(function (require) {
             if (e.which !== 13 || e.shiftKey) {
                 me.toolbar.show(400);
             }
-
         })
         // 编辑器键盘按键事件
         .on('keydown', function (e) {
 
             if (e.which !== 13 || e.shiftKey) {
-
                 return;
             }
                 
@@ -139,24 +142,25 @@ define(function (require) {
                 node.parentNode.insertBefore(line, node.nextSibling);
             }
 
-            me.focusNode(line, me.getRange());
+            me.focusNode(line.firstChild, me.getRange());
 
             e.preventDefault();
         });
 
-        // 焦点事件
-        $(main)
-        // 监听editor获取焦点事件
-        .on('focus', function() {
-            if (me.isEmpty()) {
-                me.lineBreak(true);
-            }
-            $(doc).on('click', outsideClick);
-        })
-        // 监听editor失去焦点事件
-        .on('blur', function() {
-            me.checkContentChange();
-        });
+        // // 焦点事件
+        // $(main)
+        // // 监听editor获取焦点事件
+        // .on('focus', function() {
+
+        //     if (me.isEmpty()) {
+        //         me.lineBreak(true);
+        //     }
+        //     $(doc).on('click', outsideClick);
+        // })
+        // // 监听editor失去焦点事件
+        // .on('blur', function() {
+        //     me.checkContentChange();
+        // });
 
     };
 
@@ -171,13 +175,14 @@ define(function (require) {
         var me = this;
         var nodes = [];
 
-        ele = ele || me.editor;
+        ele = ele || me.main;
 
-        $(ele).parents().each(function (index, node) {
-            if (node.nodeName.match(effectNodeReg)) {
-                nodes.push(returnAsNodeName ? node.nodeName.toLowerCase() : node);
+        while (ele && ele !== me.main) {
+            if (ele.nodeName.match(effectNodeReg)) {
+                nodes.push(returnAsNodeName ? ele.nodeName.toLowerCase() : ele);
             }
-        });
+            ele = ele.parentNode;
+        }
 
         return nodes;
     };
@@ -192,9 +197,9 @@ define(function (require) {
         var me = this;
         var node;
         var main = me.main;
-        var range = me.getRange();
+        me.range = me.range || me.getRange();
 
-        node = range.commonAncestorContainer;
+        node = me.range.commonAncestorContainer;
 
         if (!node || node === main) {
             return null;
@@ -232,23 +237,19 @@ define(function (require) {
      *
      * @return {Range} range
      */
-    Editor.prototype.getRange = function(ele) {
+    Editor.prototype.getRange = function () {
         var me = this;
         var main = me.main;
-        var range;
-
-        range = selection.rangeCount && selection.getRangeAt(0);
+        var range = selection.rangeCount && selection.getRangeAt(0);
 
         if (!range) {
             range = doc.createRange();
         }
-
         // 如果选择项包含元素不是editor
         if (!$(range.commonAncestorContainer).closest(main).length) {
             range.selectNodeContents(main);
-            range.collapse(true);
+            range.collapse(false);
         }
-
         return range;
     };
 
@@ -256,12 +257,18 @@ define(function (require) {
      * 设置范围
      *
      * @param  {Range}  range 范围
-     * @return {Object}       this
      */
     Editor.prototype.setRange = function(range) {
+        var me = this;
+        range = range || me.range;
+        
+        if (!range) {
+            range = this.getRange();
+            range.collapse(false);
+        }
+        
         selection.removeAllRanges();
         selection.addRange(range);
-        return this;
     };
 
     /**
@@ -273,6 +280,8 @@ define(function (require) {
     Editor.prototype.execCommand = function (action, options) {
         var me = this;
         action = action.toLowerCase();
+
+        me.setRange();
 
         // inline
         // bold | italic | underline | strikethrough
@@ -302,22 +311,22 @@ define(function (require) {
             commands.commandWrap(action);
         }
 
-        if (
-            name === 'indent'
-            || name === 'underline'
-            || name === 'italic'
-            || name === 'bold'
-            || name === 'align-left'
-            || name === 'align-center'
-            || name === 'align-right'
-        ) {
-            me.checkContentChange();
-        }
-        else {
-            me.cleanContent({
-                cleanAttrs: ['style']
-            });
-        }
+        // if (
+        //     name === 'indent'
+        //     || name === 'underline'
+        //     || name === 'italic'
+        //     || name === 'bold'
+        //     || name === 'align-left'
+        //     || name === 'align-center'
+        //     || name === 'align-right'
+        // ) {
+        //     me.checkContentChange();
+        // }
+        // else {
+        //     me.cleanContent({
+        //         cleanAttrs: ['style']
+        //     });
+        // }
     };
     /**
      * 换行
@@ -335,7 +344,7 @@ define(function (require) {
         }
 
         range.insertNode(node);
-        me.focusNode(node, range);
+        me.focusNode(node.firstChild, range);
     };
 
     /**
@@ -344,18 +353,12 @@ define(function (require) {
      * @param  {string} node  节点
      * @param  {Range}  range 范围
      */
-    Editor.prototype.focusNode = function (node, range, offset) {
+    Editor.prototype.focusNode = function (node, range) {
         var me = this;
         
-        range.setStart(node.lastChild, offset ? 1 : 0);
-
-        if ($(node).html() == char) {
-            range.collapse(true);
-        }
-        else {
-            range.collapse(false);
-        }
-
+        range.setStartAfter(node);
+        range.setEndBefore(node);
+        range.collapse(false);
         me.setRange(range);
     };
 
@@ -370,7 +373,7 @@ define(function (require) {
         
         if (html && html.length > 1 && html.indexOf(char) > -1) {
             $(node).html(html.replace(char, ''));
-            me.focusNode(node, range, 1);
+            me.focusNode(node, range);
         }
     };
 
