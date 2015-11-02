@@ -117,7 +117,7 @@ define(function (require) {
             if (e.which !== 13 || e.shiftKey) {
                 return;
             }
-                
+
             var node = me.getNode(true);
             if (!node || !lineBreakReg.test(node.nodeName)) {
                 return;
@@ -162,6 +162,21 @@ define(function (require) {
         //     me.checkContentChange();
         // });
 
+    };
+
+    /**
+     * 选择全部
+     * 
+     * @param  {Element} target 事件触发元素
+     */
+    Editor.prototype.selectAll = function (target) {
+        var me = this;
+        var main = me.main;
+        var oRange = doc.createRange();
+
+        oRange.selectNode(target);
+        me.setRange(oRange);
+        me.toolbar.show();
     };
 
     /**
@@ -245,11 +260,13 @@ define(function (require) {
         if (!range) {
             range = doc.createRange();
         }
+
         // 如果选择项包含元素不是editor
         if (!$(range.commonAncestorContainer).closest(main).length) {
             range.selectNodeContents(main);
             range.collapse(false);
         }
+
         return range;
     };
 
@@ -261,12 +278,12 @@ define(function (require) {
     Editor.prototype.setRange = function(range) {
         var me = this;
         range = range || me.range;
-        
+
         if (!range) {
             range = this.getRange();
             range.collapse(false);
         }
-        
+
         selection.removeAllRanges();
         selection.addRange(range);
     };
@@ -310,24 +327,8 @@ define(function (require) {
         else if (commandsReg.wrap.test(action)) {
             commands.commandWrap(action);
         }
-
-        // if (
-        //     name === 'indent'
-        //     || name === 'underline'
-        //     || name === 'italic'
-        //     || name === 'bold'
-        //     || name === 'align-left'
-        //     || name === 'align-center'
-        //     || name === 'align-right'
-        // ) {
-        //     me.checkContentChange();
-        // }
-        // else {
-        //     me.cleanContent({
-        //         cleanAttrs: ['style']
-        //     });
-        // }
     };
+
     /**
      * 换行
      *
@@ -355,7 +356,7 @@ define(function (require) {
      */
     Editor.prototype.focusNode = function (node, range) {
         var me = this;
-        
+
         range.setStartAfter(node);
         range.setEndBefore(node);
         range.collapse(false);
@@ -370,7 +371,7 @@ define(function (require) {
         var range = me.getRange();
         var node = me.getNode();
         var html = $(node).html();
-        
+
         if (html && html.length > 1 && html.indexOf(char) > -1) {
             $(node).html(html.replace(char, ''));
             me.focusNode(node, range);
@@ -415,7 +416,6 @@ define(function (require) {
         me.cleanContent();
         return me;
     };
-
 
     /**
      * 清理黑名单中的属性和标签 {cleanAttrs: ['style'], cleanTags: ['id']}

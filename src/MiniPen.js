@@ -75,6 +75,17 @@ define(function (require) {
     };
 
     /**
+     * 选择全部
+     * 
+     * @return {[type]} [description]
+     */
+    Pen.prototype.selectAll = function (target) {
+        var me = this;
+
+        me.editor.selectAll(target);
+    };
+
+    /**
      * 销毁
      */
     Pen.prototype.destroy = function () {
