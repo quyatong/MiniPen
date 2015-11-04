@@ -29,7 +29,7 @@ define(function (require) {
             .addClass(config.class)
             .attr('contenteditable', 'true');
 
-        me.lineBreak(!!$(me.main).html());
+        me.lineBreak(!$(me.main).html());
 
         // 绑定事件
         me.bindEvents();
