@@ -91,7 +91,7 @@ define(function (require) {
                 else if (fontAction == 'size') {
                     dropDownList = buildDropDownList(sizes, 'size', false, true);
                 }
-                else if (fontAction == 'bg-color') {
+                else if (fontAction == 'background-color') {
                     dropDownList = buildDropDownList(colors, 'color', 'background-color');
                 }
             }
