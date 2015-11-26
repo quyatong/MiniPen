@@ -11,8 +11,8 @@ define(function (require) {
 
         list: [
             // 文字 颜色 | 背景色 | 字体大小
-            'font-color', 'font-bg-color', 'font-size',
-            
+            'font-color', 'font-background-color', 'font-size',
+
             // 加粗 斜体 下划线 删除线
             'bold', 'italic', 'underline', 'strikethrough',
 
@@ -76,7 +76,7 @@ define(function (require) {
 
     /**
      * 选择全部
-     * 
+     *
      * @return {[type]} [description]
      */
     Pen.prototype.selectAll = function (target) {

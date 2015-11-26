@@ -95,11 +95,11 @@ define(function (require) {
         commandFont: function (name, options) {
             var map = {
                 'font-color': 'ForeColor',
-                'font-bg-color': 'BackColor',
+                'font-background-color': 'BackColor',
                 'font-size': 'FontSize'
             };
 
-            if (name == 'font-color' || name == 'font-bg-color') {
+            if (name == 'font-color' || name == 'font-background-color') {
                 this.commandOverall(map[name], options.value);
             }
             else {
