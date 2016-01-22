@@ -3,13 +3,29 @@ define(function (require) {
     var commands = require('./commands');
     var doc = document;
     var selection = doc.getSelection();
-    var char = '\u200B';
 
     var commandsReg = commands.commandsReg;
 
     var lineBreakReg = /^(?:blockquote|pre|div)$/i;
 
     var effectNodeReg = /(?:[pubia]|h[1-6]|blockquote|[uo]l|li)/i;
+
+    var saveSelection = function() {
+         var ranges = [];
+         if (selection.rangeCount) {
+             for (var i = 0, len = selection.rangeCount; i < len; ++i) {
+                 ranges.push(selection.getRangeAt(i));
+             }
+         }
+         return ranges;
+     };
+
+     var restoreSelection = function(savedSelection) {
+         selection.removeAllRanges();
+         for (var i = 0, len = savedSelection.length; i < len; ++i) {
+             selection.addRange(savedSelection[i]);
+         }
+     };
 
     /**
      * 编辑器构造函数
@@ -135,7 +151,7 @@ define(function (require) {
             }
 
             // 插入新行
-            var line = $('<div>' + char + '</div>')[0];
+            var line = $('<div><br /></div>')[0];
 
             if (!node.nextSibling) {
                 node.parentNode.appendChild(line);
@@ -168,15 +184,13 @@ define(function (require) {
 
     /**
      * 选择全部
-     * 
+     *
      * @param  {Element} target 事件触发元素
      */
     Editor.prototype.selectAll = function (target) {
         var me = this;
-        var main = me.main;
         var oRange = doc.createRange();
-
-        oRange.selectNode(target);
+        oRange.selectNode(target.firstChild);
         me.setRange(oRange);
         me.toolbar.show();
     };
@@ -229,7 +243,6 @@ define(function (require) {
         while (node && byRoot && (node.parentNode !== main)) {
             node = node.parentNode;
         }
-
         return $(node).closest(main).length ? node : null;
     };
 
@@ -314,7 +327,9 @@ define(function (require) {
         // font
         // size | fore-color | back-color
         else if (commandsReg.font.test(action)) {
+            var savedSel = saveSelection();
             commands.commandFont(action, options);
+            restoreSelection(savedSel);
         }
         // text-align left | center | right
         else if (commandsReg.align.test(action)) {
@@ -340,14 +355,14 @@ define(function (require) {
         var me = this;
         var main = me.main;
         var range = me.getRange();
-        var node = $('<div>' + char + '</div>')[0];
+        var node = $('<div><br /></div>')[0];
 
         if (empty) {
             $(main).html('');
         }
 
         range.insertNode(node);
-        me.focusNode(node.firstChild, range);
+        me.focusNode(node.firstChild || node, range);
     };
 
     /**
@@ -358,26 +373,13 @@ define(function (require) {
      */
     Editor.prototype.focusNode = function (node, range) {
         var me = this;
+        setTimeout(function () {
+            range.setStartAfter(node);
+            range.setEndBefore(node);
+            range.collapse(false);
+            me.setRange(range);
+        }, 0);
 
-        range.setStartAfter(node);
-        range.setEndBefore(node);
-        range.collapse(false);
-        me.setRange(range);
-    };
-
-    /**
-     * 过滤掉零宽字符
-     */
-    Editor.prototype.clearZeroWidthChar = function () {
-        var me = this;
-        var range = me.getRange();
-        var node = me.getNode();
-        var html = $(node).html();
-
-        if (html && html.length > 1 && html.indexOf(char) > -1) {
-            $(node).html(html.replace(char, ''));
-            me.focusNode(node, range);
-        }
     };
 
     /**

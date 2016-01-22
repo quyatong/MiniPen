@@ -103,7 +103,7 @@ define(function (require) {
                 this.commandOverall(map[name], options.value);
             }
             else {
-                this.commandWrap('label', null, {
+                this.commandWrap('font', null, {
                     'font-size': options.value
                 });
             }
