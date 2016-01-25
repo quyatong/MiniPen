@@ -36,7 +36,7 @@ define(function (require) {
 
     /**
      * 构建toolbar
-     * 
+     *
      * @param  {Array}      list    工具列表
      * @return {Element}            元素
      */
@@ -53,7 +53,7 @@ define(function (require) {
          */
         var buildDropDownList = function (list, dataKey, cssKey, isShow) {
             var dropDownList = [];
-        
+
             dropDownList.push('<ul class="dropdown-list">');
 
             $(list).each(function (index, item) {
@@ -62,13 +62,13 @@ define(function (require) {
                     +   '<li class="dropdown-list-item" '
                     +       'data-' + dataKey + '="' + item + '" '
                     +       'data-type="' + dataKey + '" '
-                    +       (cssKey ? ('style="' + cssKey + ': ' + item + '"') : '') 
+                    +       (cssKey ? ('style="' + cssKey + ': ' + item + '"') : '')
                     +   '>'
                     +       (isShow ? item : '')
                     +   '</li>'
                 );
             });
-        
+
             dropDownList.push('</ul>');
             return dropDownList.join('');
         };
@@ -98,9 +98,9 @@ define(function (require) {
 
             var clazz = 'pen-icon fa fa-' + ((fontAction && ('font ' + 'fa-' + (icons[fontAction] || fontAction))) || action);
 
-            menu.push('' 
+            menu.push(''
                 + '<div class="pen-menu-btn">'
-                +     '<i class="' + clazz + '" data-action="' + action + '">' 
+                +     '<i class="' + clazz + '" data-action="' + action + '">'
                 +           dropDownList
                 +     '</i>'
                 + '</div>'
@@ -115,12 +115,12 @@ define(function (require) {
         // if ($.inArray(list, 'createlink') || $.inArray(list, 'insertimage')) {
         //     inputBar = '<input class="pen-input" placeholder="http://" />';
         // }
-        // 
-        
+        //
+
         var toolbar = $(''
-            + '<div class="' + config.class + '-toolbar pen-toolbar">' 
-            +   menu.join('') 
-            // +   inputBar 
+            + '<div class="' + config.class + '-toolbar pen-toolbar">'
+            +   menu.join('')
+            // +   inputBar
             + '</div>'
         )[0];
 
@@ -231,7 +231,7 @@ define(function (require) {
                     var type = target.data('type');
 
                     me.editor.execCommand(
-                        action, 
+                        action,
                         {
                             type: type,
                             value: target.data(type)

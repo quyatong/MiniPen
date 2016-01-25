@@ -136,7 +136,7 @@ define(function (require) {
                 return;
             }
 
-            var node = me.getNode(true);
+            var node = me.getNode();
             if (!node || !lineBreakReg.test(node.nodeName)) {
                 return;
             }
@@ -151,7 +151,7 @@ define(function (require) {
             }
 
             // 插入新行
-            var line = $('<div><br /></div>')[0];
+            var line = $('<div style="display: block"><br /></div>')[0];
 
             if (!node.nextSibling) {
                 node.parentNode.appendChild(line);
@@ -165,20 +165,12 @@ define(function (require) {
             e.preventDefault();
         });
 
-        // // 焦点事件
-        // $(main)
-        // // 监听editor获取焦点事件
-        // .on('focus', function() {
-
-        //     if (me.isEmpty()) {
-        //         me.lineBreak(true);
-        //     }
-        //     $(doc).on('click', outsideClick);
-        // })
-        // // 监听editor失去焦点事件
-        // .on('blur', function() {
-        //     me.checkContentChange();
-        // });
+        // 焦点事件
+        $(main)
+        // 监听editor失去焦点事件
+        .on('blur', function() {
+            me.checkContentChange();
+        });
 
     };
 
@@ -221,16 +213,19 @@ define(function (require) {
     /**
      * 获取当前节点
      *
-     * @param  {[type]} byRoot [description]
-     * @return {[type]}        [description]
+     * @param  {Boolean} origin 使用原始的节点
      */
-    Editor.prototype.getNode = function (byRoot) {
+    Editor.prototype.getNode = function (origin) {
         var me = this;
         var node;
         var main = me.main;
         me.range = me.range || me.getRange();
 
         node = me.range.commonAncestorContainer;
+
+        if (origin) {
+            return node;
+        }
 
         if (!node || node === main) {
             return null;
@@ -240,9 +235,6 @@ define(function (require) {
             node = node.parentNode;
         }
 
-        while (node && byRoot && (node.parentNode !== main)) {
-            node = node.parentNode;
-        }
         return $(node).closest(main).length ? node : null;
     };
 
@@ -313,8 +305,6 @@ define(function (require) {
         var me = this;
         action = action.toLowerCase();
 
-        me.setRange();
-
         // inline
         // bold | italic | underline | strikethrough
         // insertorderedlist | insertunorderedlist | indent | outdent
@@ -333,7 +323,8 @@ define(function (require) {
         }
         // text-align left | center | right
         else if (commandsReg.align.test(action)) {
-            commands.commandAlign(action, me.getNode());
+            var ele = me.getNode();
+            commands.commandAlign(action, ele);
         }
         else if (commandsReg.block.test(action)) {
             commands.commandBlock(action);
@@ -344,6 +335,7 @@ define(function (require) {
         else if (commandsReg.wrap.test(action)) {
             commands.commandWrap(action);
         }
+
     };
 
     /**
@@ -355,7 +347,7 @@ define(function (require) {
         var me = this;
         var main = me.main;
         var range = me.getRange();
-        var node = $('<div><br /></div>')[0];
+        var node = $('<div style="display: block"><br /></div>')[0];
 
         if (empty) {
             $(main).html('');

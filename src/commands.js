@@ -58,7 +58,11 @@ define(function (require) {
                 styleStr += key + ':' + value + ';';
             });
 
-            var value = '<' + tag + (styleStr ? (' style="' + styleStr + '"') : '') + '>' + (value || selection.toString()) + '</' + tag + '>';
+            var value = ''
+                + '<' + tag + (styleStr ? (' style="' + styleStr + '"') : '') + '>'
+                + (value || selection.toString())
+                + '</' + tag + '>';
+
             me.commandOverall('insertHTML', value);
         },
 
@@ -83,6 +87,7 @@ define(function (require) {
          * @param  {string} name align-left | align-right | align-right
          */
         commandAlign: function (name, node) {
+        
             $(node).closest('div').css('text-align', name.replace('align-', ''));
         },
 
