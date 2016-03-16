@@ -1,5 +1,7 @@
 define(function (require) {
     var $ = require('jquery');
+    var Selection = require('./Selection');
+
     var root = window;
     var doc = document;
     var timer = null;
@@ -38,7 +40,7 @@ define(function (require) {
      * 构建toolbar
      *
      * @param  {Array}      list    工具列表
-     * @return {Element}            元素
+     * @return {HTML Element}            元素
      */
     Toolbar.prototype.build = function (list, config) {
 
@@ -54,6 +56,7 @@ define(function (require) {
         var buildDropDownList = function (list, dataKey, cssKey, isShow) {
             var dropDownList = [];
 
+            dropDownList.push('<div class="popup">');
             dropDownList.push('<ul class="dropdown-list">');
 
             $(list).each(function (index, item) {
@@ -70,10 +73,24 @@ define(function (require) {
             });
 
             dropDownList.push('</ul>');
+
+            if (dataKey == 'color') {
+                dropDownList.push(''
+                    + '<div class="color-input" '
+                    +     'data-' + dataKey + '="' + 'input' + '" '
+                    +     'data-type="' + dataKey + '" '
+                    + '>'
+                    +   '<input class="mini-color-input"/>'
+                    +   '<button class="mini-color-assure">确定</button>'
+                    + '</div>'
+                );
+            }
+            dropDownList.push('</div>');
+
             return dropDownList.join('');
         };
 
-        var menu = ['<div class="pen-menu">'];
+        var menu = ['<div class="mini-pen-menu">'];
 
         // 构建menu
         $(list).each(function (index, action) {
@@ -84,22 +101,21 @@ define(function (require) {
             if (/^font-(.*)/.test(action)) {
                 fontAction = RegExp.$1;
 
-
                 if (fontAction == 'color') {
                     dropDownList = buildDropDownList(colors, 'color', 'background-color');
                 }
                 else if (fontAction == 'size') {
                     dropDownList = buildDropDownList(sizes, 'size', false, true);
                 }
-                else if (fontAction == 'background-color') {
+                else if (fontAction == 'bg-color') {
                     dropDownList = buildDropDownList(colors, 'color', 'background-color');
                 }
             }
 
-            var clazz = 'pen-icon fa fa-' + ((fontAction && ('font ' + 'fa-' + (icons[fontAction] || fontAction))) || action);
+            var clazz = 'mini-pen-icon fa fa-' + ((fontAction && ('font ' + 'fa-' + (icons[fontAction] || fontAction))) || action);
 
             menu.push(''
-                + '<div class="pen-menu-btn">'
+                + '<div class="mini-pen-menu-btn">'
                 +     '<i class="' + clazz + '" data-action="' + action + '">'
                 +           dropDownList
                 +     '</i>'
@@ -113,19 +129,18 @@ define(function (require) {
 
         // // 构建输入框
         // if ($.inArray(list, 'createlink') || $.inArray(list, 'insertimage')) {
-        //     inputBar = '<input class="pen-input" placeholder="http://" />';
+        //     inputBar = '<input class="mini-pen-input" placeholder="http://" />';
         // }
         //
 
         var toolbar = $(''
-            + '<div class="' + config.class + '-toolbar pen-toolbar">'
+            + '<div class="' + config.class + '-toolbar mini-pen-toolbar">'
             +   menu.join('')
             // +   inputBar
             + '</div>'
         )[0];
 
         doc.body.appendChild(toolbar);
-
         // 创建toolbar
         return toolbar;
     };
@@ -177,7 +192,6 @@ define(function (require) {
     Toolbar.prototype.hide = function () {
         var me = this;
         var main = me.main;
-
         $(main).hide();
     };
 
@@ -215,40 +229,105 @@ define(function (require) {
             !$(main).is(':hidden') && me.rePos();
         });
 
-        // 选择toolbar上的选项
-        $(main).on('click', function (e) {
-            var icon = $(e.target).closest('.pen-icon');
+        // 暂存的选区
+        var savedSel = null;
+
+        var mousedown = function (e) {
+
+            var icon = $(e.target).closest('.mini-pen-icon');
             var action = icon.data('action');
-            var target = $(e.target);
 
             if (!action) {
                 return;
             }
+
+            savedSel = Selection.saveSelection();
+            e.stopPropagation();
+
+            return;
+        };
+
+        // 鼠标按下toolbar上图标的时候记录当前选区
+        $(main).on('mousedown', mousedown);
+        $('input', main).on('mousedown', mousedown);
+
+        /**
+         * 任务处理函数
+         *
+         * @param  {string} action    行为
+         * @param  {string} type      类型
+         * @param  {string} typeValue 类型值
+         */
+        var taskHandler = function (action, type, typeValue) {
+
+            if (!savedSel) {
+                return false;
+            }
+            
+            Selection.restoreSelection(savedSel);
+
             // 修改字体 color | size |
             if (/^font-(.*)/.test(action)) {
 
-                if (target.hasClass('dropdown-list-item')) {
-                    var type = target.data('type');
+                if (type) {
 
                     me.editor.execCommand(
                         action,
                         {
                             type: type,
-                            value: target.data(type)
+                            value: typeValue
                         }
                     );
-
-                    me.editor.range = me.editor.getRange();
                 }
-
-                return;
             }
-
-            if (!/(?:createlink)|(?:insertimage)/.test(action)) {
+            else {
                 me.editor.execCommand(action, '');
                 me.show();
+            }
+
+            Selection.restoreSelection(savedSel);
+            savedSel = null;
+        };
+
+        var mouseup = function (e) {
+            var icon = $(e.target).closest('.mini-pen-icon');
+
+            var target = $(e.target);
+            var action = icon.data('action');
+
+            if (!action) {
                 return;
             }
+
+            var type = target.data('type');
+            var typeValue = target.data(type);
+
+            taskHandler(action, type, typeValue);
+
+            e.stopPropagation();
+            return false;
+        };
+
+        // 鼠标抬起toolbar上图标的时候执行操作并还原当前选区
+        $(main).on('mouseup', mouseup);
+
+        $('button,input', main).on('mouseup mousedown click', function (e) {
+            e.stopPropagation();
+        });
+
+
+        $('button', main).on('click', function (e) {
+            var icon = $(e.target).closest('.mini-pen-icon');
+
+            var target = $(e.target).closest('.color-input');
+            var action = icon.data('action');
+            if (!action) {
+                return;
+            }
+
+            var type = target.data('type');
+
+            taskHandler(action, type, $('input', target).val());
         });
     };
 

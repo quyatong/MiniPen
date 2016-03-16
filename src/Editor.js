@@ -1,31 +1,12 @@
 define(function (require) {
     var $ = require('jquery');
     var commands = require('./commands');
+
     var doc = document;
-    var selection = doc.getSelection();
-
+    var selection = document.getSelection();
     var commandsReg = commands.commandsReg;
-
     var lineBreakReg = /^(?:blockquote|pre|div)$/i;
-
     var effectNodeReg = /(?:[pubia]|h[1-6]|blockquote|[uo]l|li)/i;
-
-    var saveSelection = function() {
-         var ranges = [];
-         if (selection.rangeCount) {
-             for (var i = 0, len = selection.rangeCount; i < len; ++i) {
-                 ranges.push(selection.getRangeAt(i));
-             }
-         }
-         return ranges;
-     };
-
-     var restoreSelection = function(savedSelection) {
-         selection.removeAllRanges();
-         for (var i = 0, len = savedSelection.length; i < len; ++i) {
-             selection.addRange(savedSelection[i]);
-         }
-     };
 
     /**
      * 编辑器构造函数
@@ -99,7 +80,7 @@ define(function (require) {
         .on('mouseleave', function () {
 
             if (selecting) {
-                me.toolbar.show(800);
+                me.toolbar.show(80);
             }
 
             selecting = false;
@@ -108,7 +89,7 @@ define(function (require) {
         .on('mouseup', function () {
 
             if (selecting) {
-                me.toolbar.show(50);
+                me.toolbar.show(30);
             }
 
             selecting = false;
@@ -151,7 +132,7 @@ define(function (require) {
             }
 
             // 插入新行
-            var line = $('<div style="display: block"><br /></div>')[0];
+            var line = $('<p class="mini-line" style="display: block"><br /></p>')[0];
 
             if (!node.nextSibling) {
                 node.parentNode.appendChild(line);
@@ -168,10 +149,13 @@ define(function (require) {
         // 焦点事件
         $(main)
         // 监听editor失去焦点事件
-        .on('blur', function() {
+        .on('blur', function () {
             me.checkContentChange();
+        })
+        .on('change', function (e) {
+            e.stopPropagation();
+            return false;
         });
-
     };
 
     /**
@@ -317,9 +301,7 @@ define(function (require) {
         // font
         // size | fore-color | back-color
         else if (commandsReg.font.test(action)) {
-            var savedSel = saveSelection();
             commands.commandFont(action, options);
-            restoreSelection(savedSel);
         }
         // text-align left | center | right
         else if (commandsReg.align.test(action)) {
@@ -347,7 +329,7 @@ define(function (require) {
         var me = this;
         var main = me.main;
         var range = me.getRange();
-        var node = $('<div style="display: block"><br /></div>')[0];
+        var node = $('<p class="mini-line" style="display: block"><br /></p>')[0];
 
         if (empty) {
             $(main).html('');

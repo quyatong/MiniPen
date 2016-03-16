@@ -87,8 +87,14 @@ define(function (require) {
          * @param  {string} name align-left | align-right | align-right
          */
         commandAlign: function (name, node) {
-        
-            $(node).closest('div').css('text-align', name.replace('align-', ''));
+            var align = name.replace('align-', '');
+            if (node) {
+                // 先清除
+                $('.mini-line', node).css('text-align', align);
+
+                // 添加对齐方式属性
+                $(node).closest('.mini-line').css('text-align', align);
+            }
         },
 
         /**
@@ -100,11 +106,10 @@ define(function (require) {
         commandFont: function (name, options) {
             var map = {
                 'font-color': 'ForeColor',
-                'font-background-color': 'BackColor',
+                'font-bg-color': 'BackColor',
                 'font-size': 'FontSize'
             };
-
-            if (name == 'font-color' || name == 'font-background-color') {
+            if (name == 'font-color' || name == 'font-bg-color') {
                 this.commandOverall(map[name], options.value);
             }
             else {

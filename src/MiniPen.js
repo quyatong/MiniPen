@@ -7,9 +7,10 @@ define(function (require) {
 
     // 默认配置
     var defaults = {
-        class: 'pen',
+        class: 'mini-pen',
 
         list: [
+            // 'font-family',
             // 文字 颜色 | 背景色 | 字体大小
             'font-color', 'font-background-color', 'font-size',
 
@@ -28,11 +29,11 @@ define(function (require) {
     };
 
     /**
-     * Pen 构造函数
+     * MiniPen 构造函数
      *
      * @param  {Object} config 用户配置项
      */
-    var Pen = function(config) {
+    var MiniPen = function(config) {
         var me = this;
 
         // merge 用户的配置
@@ -47,9 +48,6 @@ define(function (require) {
         // 打通editor和toolbar
         me.toolbar.use(me.editor);
         me.editor.use(me.toolbar);
-
-        // 保存当前内容
-        me.prevContent = me.editor.getContent();
     };
 
     /**
@@ -57,9 +55,8 @@ define(function (require) {
      *
      * @param {string} content 编辑器内容
      */
-    Pen.prototype.setContent = function (content) {
+    MiniPen.prototype.setContent = function (content) {
         var me = this;
-
         me.editor.setContent(content);
     };
 
@@ -68,27 +65,25 @@ define(function (require) {
      *
      * @return {String} html
      */
-    Pen.prototype.getContent = function () {
+    MiniPen.prototype.getContent = function () {
         var me = this;
-
         return me.editor.getContent();
     };
 
     /**
      * 选择全部
      *
-     * @return {[type]} [description]
+     * @param {HTML Element} 选择元素
      */
-    Pen.prototype.selectAll = function (target) {
+    MiniPen.prototype.selectAll = function (target) {
         var me = this;
-
         me.editor.selectAll(target);
     };
 
     /**
      * 销毁
      */
-    Pen.prototype.destroy = function () {
+    MiniPen.prototype.destroy = function () {
         var me = this;
 
         // 销毁工具条
@@ -98,5 +93,5 @@ define(function (require) {
         me.editor.destroy();
     };
 
-    return Pen;
+    return MiniPen;
 });

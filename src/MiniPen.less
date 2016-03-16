@@ -1,32 +1,29 @@
-.pen-toolbar {
+.mini-pen-toolbar {
     font: 400 1.16em/1.45 Palatino, Optima, Georgia, serif;
     color: #331;
-    white-space:nowrap;
-    box-shadow:1px 2px 3px -2px #222;
-    background:#333;
-    background-image:linear-gradient(to bottom, #222, #333);
-    opacity:0.9;
-    position:fixed;
-    height:36px;
-    border:1px solid #333;
-    border-radius:3px;
-    display:none;
-    z-index:1000;
+    white-space: nowrap;
+    box-shadow: 1px 2px 3px -2px #ccc;
+    background: #eee;
+    position: fixed;
+    height: 36px;
+    border: 1px solid #ccc;
+    display: none;
+    z-index: 1000;
 
-    .pen-menu-btn {
-        display:inline-block;
+    .mini-pen-menu-btn {
+        display: inline-block;
 
-        .pen-icon{
+        .mini-pen-icon{
             position: relative;
-            min-width:20px;
-            display:inline-block;
-            padding:0 10px;
+            min-width: 20px;
+            display: inline-block;
+            padding: 0 10px;
             height: 36px;
             line-height: 36px;
             vertical-align: top;
-            color:#fff;
-            text-align:center;
-            cursor:pointer;
+            color: #333;
+            text-align: center;
+            cursor: pointer;
             position: relative;
             -moz-user-select: none;
             -webkit-user-select: none;
@@ -38,19 +35,20 @@
                 background-image: none;
             }
 
-            &:hover{
-                background:#000;
+            &:hover {
+                background: #ddd;
             }
 
-
-            &.active{
-                color:#1abf89;
-                background:#000;
-                box-shadow:inset 2px 2px 4px #000;
+            &:active {
+                background: #ccc;
             }
 
-            .dropdown-list {
+            &.active {
+                color: #1abf89;
+                background: #ccc;
+            }
 
+            .popup {
                 position: absolute;
                 left: 0;
                 top: 100%;
@@ -60,16 +58,14 @@
                 display: none;
             }
 
-
-
             &:hover {
-                .dropdown-list {
+                .popup {
                     display: block;
                 }
             }
         }
 
-        .fa-background-color,
+        .fa-bg-color,
         .fa-color {
             .dropdown-list-item {
                 float: left;
@@ -77,38 +73,80 @@
                 height: 18px;
                 width: 18px;
                 margin: 3px;
-                box-shadow: 0 1px 2px rgba(0,0,0,.5);
+                box-shadow: 0 1px 2px rgba(0, 0, 0, .5);
             }
-        }
-        .fa-text-height {
 
             .dropdown-list {
+                overflow: hidden;
+            }
+        }
+
+
+        .color-input {
+            float: left;
+            margin: 0;
+            box-sizing: border-box;
+            border: none;
+            box-shadow: none;
+            padding: 3px;
+
+            input {
+                padding: 0 3px;
+                box-sizing: border-box;
+                float: left;
+                border: solid 1px #ccc;
+                height: 22px;
+                line-height: 22px;
+                width: 70px;
+            }
+
+            button {
+                float: left;
+                width: 50px;
+                height: 22px;
+                line-height: 22px;
+                padding: 0px;
+                margin: 0px;
+                margin-left: 3px;
+                box-sizing: border-box;
+            }
+        }
+
+        .fa-bg-color::before {
+            background-color: #fdea02;
+        }
+
+        .fa-text-height {
+            .popup {
                 width: 60px;
             }
 
             .dropdown-list-item {
+                font-size: 12px;
                 cursor: pointer;
-                height: 25px;
-                color: #000;
-                line-height: 25px;
+                color: #666;
+                height: 20px;
+                line-height: 20px;
                 border-bottom: solid 1px #eee;
+
+                &:hover {
+                    color: #555;
+                    background-color: #ddd;
+                }
+
+                &:active {
+                    color: #333;
+                    background-color: #ccc;
+                }
             }
         }
 
         .fa-color {
             color: #EA4B35;
         }
-
-        .fa-background-color {
-            background-color: #666;
-        }
-
-        .fa-background-color:hover {
-            background-color: #666;
-        }
     }
 
-    .pen-input{
+    .mini-pen-input{
         font-size: 14px;
         line-height: 1;
         display: none;
@@ -116,22 +154,5 @@
         &:focus{
             outline:none;
         }
-    }
-
-    // 箭头
-    &:after {
-        top:100%;
-        border:
-        solid transparent;
-        content:" ";
-        height:0;
-        width:0;
-        position:absolute;
-        pointer-events:none;
-        border-color:rgba(51, 51, 51, 0);
-        border-top-color:#333;
-        border-width:6px;
-        left:50%;
-        margin-left:-6px;
     }
 }
